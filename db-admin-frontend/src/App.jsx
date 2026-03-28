@@ -1,48 +1,50 @@
 import React, { useState, useEffect } from 'react'
 import { fetchSchemas, fetchTables, fetchSchema } from './services/api'
-import Sidebar from './components/Sidebar'
-import DataView from './components/DataView'
-import SchemaView from './components/SchemaView'
+import Sidebar        from './components/Sidebar'
+import DataView       from './components/DataView'
+import SchemaView     from './components/SchemaView'
 import SchemaSelector from './components/SchemaSelector'
-import RedisView from './components/redis/RedisView'
+import RedisView      from './components/redis/RedisView'
+import KafkaView      from './components/kafka/KafkaView'
 
 const s = {
-  app:     { display: 'flex', height: '100vh', overflow: 'hidden', flexDirection: 'column' },
-  topbar:  { display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', height: 46, background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', flexShrink: 0 },
-  logo:    { fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 },
-  logoMark:{ width: 22, height: 22, background: 'var(--accent)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#fff', fontWeight: 700 },
-  divider: { height: 18, width: 1, background: 'var(--border)', margin: '0 2px' },
-  // Top-level mode tabs (MariaDB / Redis)
-  modeTab: (active) => ({
-    display: 'flex', alignItems: 'center', gap: 6,
-    padding: '0 14px', height: '100%',
+  app:      { display: 'flex', height: '100vh', overflow: 'hidden', flexDirection: 'column' },
+  topbar:   { display: 'flex', alignItems: 'center', gap: 0, padding: '0 16px', height: 46, background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', flexShrink: 0 },
+  logo:     { fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginRight: 8 },
+  logoMark: { width: 22, height: 22, background: 'var(--accent)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#fff', fontWeight: 700 },
+  divider:  { height: 18, width: 1, background: 'var(--border)', margin: '0 8px', flexShrink: 0 },
+  modeTab:  (active) => ({
+    display: 'flex', alignItems: 'center', gap: 6, padding: '0 14px', height: '100%',
     fontFamily: 'var(--font-mono)', fontSize: 12, cursor: 'pointer',
     color: active ? 'var(--text-primary)' : 'var(--text-muted)',
     borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
     background: 'none', border: 'none',
-    borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
-    transition: 'color var(--transition)',
-    flexShrink: 0,
+    transition: 'color var(--transition)', flexShrink: 0,
   }),
-  modeIcon: { fontSize: 13 },
+  modeIcon: { fontSize: 13, flexShrink: 0 },
   breadcrumb: { display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' },
   breadcrumbActive: { color: 'var(--accent-text)' },
-  spacer:  { flex: 1 },
+  spacer:   { flex: 1 },
   refreshBtn: { padding: '5px 11px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)', cursor: 'pointer' },
-  body:    { display: 'flex', flex: 1, overflow: 'hidden' },
-  main:    { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' },
-  tabBar:  { display: 'flex', padding: '0 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)', flexShrink: 0 },
-  tab:     (active) => ({ padding: '9px 16px', fontSize: 12, fontFamily: 'var(--font-mono)', cursor: 'pointer', color: active ? 'var(--accent-text)' : 'var(--text-muted)', borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent', marginBottom: -1, background: 'transparent', border: 'none', transition: 'color var(--transition)' }),
+  body:     { display: 'flex', flex: 1, overflow: 'hidden' },
+  main:     { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' },
+  tabBar:   { display: 'flex', padding: '0 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)', flexShrink: 0 },
+  tab:      (a) => ({ padding: '9px 16px', fontSize: 12, fontFamily: 'var(--font-mono)', cursor: 'pointer', color: a ? 'var(--accent-text)' : 'var(--text-muted)', borderBottom: a ? '2px solid var(--accent)' : '2px solid transparent', marginBottom: -1, background: 'transparent', border: 'none', transition: 'color var(--transition)' }),
   placeholder: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 12 },
   placeholderIcon: { fontSize: 32, opacity: 0.15 },
   placeholderSub:  { fontSize: 11, color: 'var(--text-muted)', opacity: 0.6 },
 }
 
+const MODES = [
+  { id: 'mariadb', icon: '▤', label: 'MariaDB' },
+  { id: 'redis',   icon: '⬡', label: 'Redis'   },
+  { id: 'kafka',   icon: '◈', label: 'Kafka'   },
+]
+
 export default function App() {
-  // Top-level mode: 'mariadb' | 'redis'
   const [mode, setMode] = useState('mariadb')
 
-  // MariaDB state
+  // ── MariaDB state ─────────────────────────────────────────────────────────
   const [schemas,        setSchemas]        = useState([])
   const [schemasLoading, setSchemasLoading] = useState(true)
   const [selectedSchema, setSelectedSchema] = useState(null)
@@ -67,8 +69,7 @@ export default function App() {
 
   const loadSchema = async (schemaName) => {
     setSelectedSchema(schemaName)
-    setSelectedTable(null)
-    setColumns([])
+    setSelectedTable(null); setColumns([])
     setTablesLoading(true)
     try { setTables(await fetchTables(schemaName)) }
     catch (e) { setTables([]) }
@@ -76,8 +77,7 @@ export default function App() {
   }
 
   const selectTable = async (tableName) => {
-    setSelectedTable(tableName)
-    setActiveTab('data')
+    setSelectedTable(tableName); setActiveTab('data')
     setColumnsLoading(true)
     try { setColumns(await fetchSchema(selectedSchema, tableName)) }
     catch (e) { setColumns([]) }
@@ -91,30 +91,27 @@ export default function App() {
       {/* ── Global topbar ── */}
       <header style={s.topbar}>
         <div style={s.logo}>
-          <div style={s.logoMark}>DB</div>
-          DB Admin
+          <div style={s.logoMark}>OP</div>
+          OmniPanel
         </div>
 
         <div style={s.divider} />
 
-        {/* Mode switcher tabs */}
-        <button style={s.modeTab(mode === 'mariadb')} onClick={() => setMode('mariadb')}>
-          <span style={s.modeIcon}>▤</span> MariaDB
-        </button>
-        <button style={s.modeTab(mode === 'redis')} onClick={() => setMode('redis')}>
-          <span style={s.modeIcon}>⬡</span> Redis
-        </button>
+        {/* Mode tabs */}
+        {MODES.map(m => (
+          <button key={m.id} style={s.modeTab(mode === m.id)} onClick={() => setMode(m.id)}>
+            <span style={s.modeIcon}>{m.icon}</span>{m.label}
+          </button>
+        ))}
 
         <div style={s.divider} />
 
-        {/* MariaDB breadcrumb — only shown in mariadb mode */}
+        {/* MariaDB schema + breadcrumb */}
         {mode === 'mariadb' && (
           <>
             <SchemaSelector
-              schemas={schemas}
-              selected={selectedSchema}
-              loading={schemasLoading}
-              onChange={loadSchema}
+              schemas={schemas} selected={selectedSchema}
+              loading={schemasLoading} onChange={loadSchema}
             />
             {selectedTable && (
               <>
@@ -135,7 +132,8 @@ export default function App() {
         <div style={s.spacer} />
 
         {mode === 'mariadb' && (
-          <button style={s.refreshBtn} onClick={() => selectedSchema && loadSchema(selectedSchema)}
+          <button style={s.refreshBtn}
+            onClick={() => selectedSchema && loadSchema(selectedSchema)}
             onMouseEnter={e => e.target.style.color = 'var(--text-primary)'}
             onMouseLeave={e => e.target.style.color = 'var(--text-muted)'}>
             ↻ Refresh
@@ -144,9 +142,8 @@ export default function App() {
       </header>
 
       {/* ── Body ── */}
-      {mode === 'redis' ? (
-        <RedisView />
-      ) : (
+      {mode === 'redis' ? <RedisView /> :
+       mode === 'kafka' ? <KafkaView /> : (
         <div style={s.body}>
           <Sidebar tables={tables} loading={tablesLoading} selected={selectedTable} onSelect={selectTable} />
           <div style={s.main}>
@@ -173,7 +170,8 @@ export default function App() {
                   <button style={s.tab(activeTab === 'schema')} onClick={() => setActiveTab('schema')}>Structure</button>
                 </div>
                 {activeTab === 'data' && (
-                  <DataView key={`${selectedSchema}.${selectedTable}`} schemaName={selectedSchema} tableName={selectedTable} columns={columns} />
+                  <DataView key={`${selectedSchema}.${selectedTable}`}
+                    schemaName={selectedSchema} tableName={selectedTable} columns={columns} />
                 )}
                 {activeTab === 'schema' && (
                   <div style={{ flex: 1, overflow: 'auto' }} className="fade-in">

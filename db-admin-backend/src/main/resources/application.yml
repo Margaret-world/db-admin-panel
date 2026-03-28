@@ -49,3 +49,15 @@ db-admin:
     - db_admin_test
     - shop_db
     - cms_db
+  # Kafka clusters — named map, each with its own bootstrap-servers
+  kafka-clusters:
+    local:
+      bootstrap-servers: localhost:9092
+      label: "Local Dev"
+    # staging:
+    #   bootstrap-servers: kafka-staging:9092
+    #   label: "Staging"
+    #   security-protocol: SASL_SSL
+    #   sasl-mechanism: PLAIN
+    #   sasl-username: user
+    #   sasl-password: secret

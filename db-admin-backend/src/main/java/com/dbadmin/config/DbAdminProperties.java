@@ -5,7 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Component
@@ -28,6 +30,12 @@ public class DbAdminProperties {
      */
     private List<String> allowedSchemas = new ArrayList<>();
 
+    /**
+     * Named Kafka clusters.
+     * Key = cluster ID (used in API paths), value = cluster config.
+     */
+    private Map<String, KafkaClusterConfig> kafkaClusters = new LinkedHashMap<>();
+
     public boolean isTableBlocked(String tableName) {
         return blockedTables.stream()
                 .anyMatch(t -> t.equalsIgnoreCase(tableName));
@@ -37,5 +45,21 @@ public class DbAdminProperties {
         if (allowedSchemas == null || allowedSchemas.isEmpty()) return true;
         return allowedSchemas.stream()
                 .anyMatch(s -> s.equalsIgnoreCase(schemaName));
+    }
+
+    public KafkaClusterConfig getCluster(String clusterId) {
+        KafkaClusterConfig cfg = kafkaClusters.get(clusterId);
+        if (cfg == null) throw new IllegalArgumentException("Unknown Kafka cluster: " + clusterId);
+        return cfg;
+    }
+
+    @Data
+    public static class KafkaClusterConfig {
+        private String bootstrapServers  = "localhost:9092";
+        private String label             = "";
+        private String securityProtocol  = "PLAINTEXT";
+        private String saslMechanism     = "";
+        private String saslUsername      = "";
+        private String saslPassword      = "";
     }
 }

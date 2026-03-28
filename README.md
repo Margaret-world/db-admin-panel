@@ -1,6 +1,6 @@
-# DB Admin Panel
+# OmniPanel
 
-A lightweight, self-hosted database administration panel built with **Spring Boot 3.5 + MyBatis-Plus** (backend) and **React 18 + Vite** (frontend).
+A lightweight, self-hosted omi panel built with **Spring Boot 3.5 + MyBatis-Plus** (backend) and **React 18 + Vite** (frontend).
 
 Browse tables, view and edit data, and inspect Redis keys — all through your application's existing database connection, without needing direct DB access from your local machine.
 
@@ -39,21 +39,27 @@ Browse tables, view and edit data, and inspect Redis keys — all through your a
 - **Key CRUD** — create keys of any type via a modal form, delete with confirmation
 - **Key detail panel** — Hash displayed as a table, ZSet with scores, List/Set as indexed items
 
+### Kafka
+- **List topics & partitions**
+- **View consumer groups & lag** 
+- **Browse messages (from offset)**
+- **Publish test messages**
+- **Create / delete topics**
 ---
 
 ## Tech Stack
 
-| Layer | Technology                                   |
-|---|----------------------------------------------|
-| Backend language | Java 17                                      |
-| Backend framework | Spring Boot 3.5                              |
-| ORM / SQL | MyBatis-Plus 3.5.12                          |
-| Redis client | Lettuce (via spring-boot-starter-data-redis) |
-| Database | MariaDB 11.4                                 |
-| Cache | Redis 7.2                                    |
+| Layer              | Technology                                   |
+| ------------------ | -------------------------------------------- |
+| Backend language   | Java 21                                      |
+| Backend framework  | Spring Boot 3.5                              |
+| ORM / SQL          | MyBatis-Plus 3.5.12                          |
+| Redis client       | Lettuce (via spring-boot-starter-data-redis) |
+| Database           | MariaDB 11.4                                 |
+| Cache              | Redis 7.2                                    |
 | Frontend framework | React 18 + Vite 6                            |
-| HTTP client | Axios                                        |
-| Container | Docker + Docker Compose                      |
+| HTTP client        | Axios                                        |
+| Container          | Docker + Docker Compose                      |
 
 ---
 
@@ -126,7 +132,7 @@ Browse tables, view and edit data, and inspect Redis keys — all through your a
 
 ### Prerequisites
 
-- Java 17+
+- Java 21+
 - Maven 3.9+
 - Node.js 18+
 - Docker Desktop
@@ -134,7 +140,7 @@ Browse tables, view and edit data, and inspect Redis keys — all through your a
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/db-admin-panel.git
+git clone https://github.com/Margaret-world/db-admin-panel.git
 cd db-admin-panel
 ```
 
@@ -230,33 +236,34 @@ MariaDB uses **3307** on the host to avoid conflicts with any local MySQL instal
 
 ### MariaDB endpoints
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/admin/db/schemas` | List allowed schemas |
-| `GET` | `/api/admin/db/schemas/{schema}/tables` | List tables in a schema |
-| `GET` | `/api/admin/db/schemas/{schema}/tables/{table}/schema` | Column definitions |
-| `GET` | `/api/admin/db/schemas/{schema}/tables/{table}/rows` | Paginated rows + search |
-| `POST` | `/api/admin/db/schemas/{schema}/tables/{table}/rows` | Insert a row |
-| `PUT` | `/api/admin/db/schemas/{schema}/tables/{table}/rows/{pk}` | Update a row |
-| `DELETE` | `/api/admin/db/schemas/{schema}/tables/{table}/rows/{pk}` | Delete a row |
+| Method   | Endpoint                                                  | Description             |
+| -------- | --------------------------------------------------------- | ----------------------- |
+| `GET`    | `/api/admin/db/schemas`                                   | List allowed schemas    |
+| `GET`    | `/api/admin/db/schemas/{schema}/tables`                   | List tables in a schema |
+| `GET`    | `/api/admin/db/schemas/{schema}/tables/{table}/schema`    | Column definitions      |
+| `GET`    | `/api/admin/db/schemas/{schema}/tables/{table}/rows`      | Paginated rows + search |
+| `POST`   | `/api/admin/db/schemas/{schema}/tables/{table}/rows`      | Insert a row            |
+| `PUT`    | `/api/admin/db/schemas/{schema}/tables/{table}/rows/{pk}` | Update a row            |
+| `DELETE` | `/api/admin/db/schemas/{schema}/tables/{table}/rows/{pk}` | Delete a row            |
 
 **Row query params:** `page`, `pageSize`, `search`
 
 **Row request body:**
+
 ```json
 { "data": { "column_name": "value" } }
 ```
 
 ### Redis endpoints
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/admin/redis/info` | Key count per DB (db0–db15) |
-| `GET` | `/api/admin/redis/db/{db}/keys` | SCAN keys (`pattern`, `cursor`, `count`) |
-| `GET` | `/api/admin/redis/db/{db}/keys/{key}` | Full key detail + value |
-| `POST` | `/api/admin/redis/db/{db}/keys` | Create or overwrite a key |
-| `PUT` | `/api/admin/redis/db/{db}/keys/{key}/ttl` | Update TTL only |
-| `DELETE` | `/api/admin/redis/db/{db}/keys/{key}` | Delete a key |
+| Method   | Endpoint                                  | Description                              |
+| -------- | ----------------------------------------- | ---------------------------------------- |
+| `GET`    | `/api/admin/redis/info`                   | Key count per DB (db0–db15)              |
+| `GET`    | `/api/admin/redis/db/{db}/keys`           | SCAN keys (`pattern`, `cursor`, `count`) |
+| `GET`    | `/api/admin/redis/db/{db}/keys/{key}`     | Full key detail + value                  |
+| `POST`   | `/api/admin/redis/db/{db}/keys`           | Create or overwrite a key                |
+| `PUT`    | `/api/admin/redis/db/{db}/keys/{key}/ttl` | Update TTL only                          |
+| `DELETE` | `/api/admin/redis/db/{db}/keys/{key}`     | Delete a key                             |
 
 ---
 

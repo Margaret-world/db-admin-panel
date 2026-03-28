@@ -1,4 +1,4 @@
-# DB Admin Panel
+# OmniPanel
 
 An in-app database admin panel built with **Spring Boot 3.5 + MyBatis-Plus** (backend) and **React + Vite** (frontend).
 
