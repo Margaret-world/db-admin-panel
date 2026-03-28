@@ -1,0 +1,48 @@
+services:
+
+  mariadb:
+    image: mariadb:11.4
+    container_name: db-admin-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root1234
+      MARIADB_DATABASE: db_admin_test
+      MARIADB_USER: dbadmin
+      MARIADB_PASSWORD: dbadmin123
+    ports:
+      - "3306:3306"      # using 3307 to avoid conflicts with local MySQL
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./sql/mariadb-seed.sql:/docker-entrypoint-initdb.d/mariadb-seed.sql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: db-admin-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis/redis-seed.sh:/docker-entrypoint-initdb.d/redis-seed.sh
+    command: redis-server --save 60 1 --loglevel notice
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mariadb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+
+
