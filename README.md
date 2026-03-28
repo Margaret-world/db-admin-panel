@@ -10,12 +10,13 @@ Browse tables, view and edit data, and inspect Redis keys — all through your a
 
 > **MariaDB — Data view**
 > Browse tables across multiple schemas, search rows, paginate, and perform full CRUD operations.
-
+![img.png](img.png)
 > **MariaDB — Structure view**
 > Inspect column types, primary keys, foreign keys, nullable flags, and comments.
-
+![img_1.png](img_1.png)
 > **Redis — Key browser**
 > Switch between db0–db15, scan keys by pattern, and view values for all 5 Redis data types.
+![img_2.png](img_2.png)
 
 ---
 
@@ -189,7 +190,7 @@ Visit **http://localhost:3000**
 ```yaml
 spring:
   datasource:
-    url: jdbc:mariadb://localhost:3307/db_admin_test
+    url: jdbc:mariadb://localhost:3306/db_admin_test
     username: dbadmin
     password: dbadmin123
 
@@ -217,9 +218,9 @@ db-admin:
 ### Docker ports
 
 | Service | Host port | Container port |
-|---|---|---|
-| MariaDB | 3307 | 3306 |
-| Redis | 6379 | 6379 |
+|---|-----------|---|
+| MariaDB | 3306      | 3306 |
+| Redis | 6379      | 6379 |
 
 MariaDB uses **3307** on the host to avoid conflicts with any local MySQL installation. Adjust in `docker-compose.yml` and `application.yml` as needed.
 
